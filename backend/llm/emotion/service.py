@@ -5,7 +5,7 @@ from typing import Dict
 import httpx
 from backend.llm.emotion.prompt import PROMPT_TEMPLATE
 
-LLAMA_ENDPOINT = "http://localhost:8081/v1/completions"
+LLAMA_ENDPOINT = "http://host.docker.internal:8081/v1/completions"
 ALLOWED_EMOTIONS = {
     "joyful", "hopeful", "melancholic", "romantic", "peaceful", "nervous",
     "regretful", "admiring", "tense", "nostalgic", "whimsical", "sarcastic",
