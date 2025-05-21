@@ -1,12 +1,11 @@
 # backend/db/config.py
 import os
 
-# 데이터베이스 설정
 DB_CONFIG = {
-    'host': 'localhost',
-    'user': 'dael',
-    'password': os.environ.get('DB_AM_PASSWORD'),
-    'database': 'arielle',
-    'port': 3306,
+    'host': os.environ.get('DB_HOST', 'localhost'),
+    'user': os.environ.get('DB_USER'),
+    'password': os.environ.get('DB_PASSWORD'),
+    'database': os.environ.get('DB_NAME'),
+    'port': int(os.environ.get('DB_PORT')),
     'charset': 'utf8mb4'
 }

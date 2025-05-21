@@ -1,0 +1,29 @@
+# ASGI/웹 관련
+fastapi
+uvicorn[standard]
+httpx
+python-socketio
+
+# 데이터 처리
+pydantic
+python-dotenv
+requests
+numpy
+
+# 시스템/하드웨어
+psutil
+pycaw
+comtypes
+platformdirs
+
+# DB 연동
+pymysql
+
+# Azure + HuggingFace + OpenVINO 관련
+azure-cognitiveservices-speech
+huggingface_hub
+cryptography
+openvino_genai
+
+# SSE
+sseclient-py

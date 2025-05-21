@@ -1,0 +1,47 @@
+# arielle-backend/docker-compose.yml
+version: '3.8'
+
+services:
+    multimodal-backend:
+        build: .
+        container_name: multimodal-backend
+        command: uvicorn backend.main:app --host 0.0.0.0 --port 8000
+        ports:
+            - "8000:8000"
+        restart: always
+        env_file:
+            - .env
+        depends_on:
+            - mysql
+
+    mcp-backend:
+        build: .
+        container_name: mcp-backend
+        command: uvicorn backend.mcp.server:app --host 0.0.0.0 --port 8500
+        ports:
+            - "8500:8500"
+        restart: always
+        env_file:
+            - .env
+        depends_on:
+            - mysql
+
+    mysql:
+        image: mysql:8.0
+        container_name: mysql
+        environment:
+            MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+            MYSQL_DATABASE: ${MYSQL_DATABASE}
+            MYSQL_USER: ${MYSQL_USER}
+            MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+        ports:
+            - "3306:3306"
+        volumes:
+            - mysql_data:/var/lib/mysql
+            - ./init_sql:/docker-entrypoint-initdb.d:ro
+        restart: always
+
+volumes:
+    mysql_data:
+
+  
