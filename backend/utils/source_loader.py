@@ -1,7 +1,7 @@
 # backend/utils/source_loader.py
 import requests
 from pathlib import Path
-from backend.db.database import get_connection
+from backend.db.base import get_connection
 
 def load_text_from_local_sources(source_ids: list[int]) -> list[str]:
     texts = []

@@ -4,7 +4,8 @@ from fastapi import APIRouter, HTTPException, Query
 import httpx
 from pydantic import BaseModel
 from typing import List
-from backend.db.database import get_connection, insert_mcp_log
+from backend.db.base import get_connection
+from backend.db.mcp_db import insert_mcp_log
 
 import subprocess
 import shlex

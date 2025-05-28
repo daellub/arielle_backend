@@ -56,7 +56,7 @@ class LLMModelPatch(BaseModel):
 @router.get("/llm/model")
 async def get_llm_models():
     try:
-        from backend.db.database import get_llm_models_from_db
+        from backend.db.llm_db import get_llm_models_from_db
         models = get_llm_models_from_db()
         return {"models": [LLMModelOut(**m) for m in models]}
     except Exception as e:
@@ -65,7 +65,7 @@ async def get_llm_models():
 @router.post("/llm/model")
 async def register_llm_model(model_info: LLMModelIn):
     try:
-        from backend.db.database import save_llm_model_to_db
+        from backend.db.llm_db import save_llm_model_to_db
         model_id = save_llm_model_to_db(model_info)
         return {"message": "LLM 모델 등록 성공", "model_id": model_id}
     except Exception as e:
@@ -75,7 +75,7 @@ async def register_llm_model(model_info: LLMModelIn):
 async def update_llm_model(model_id: str, model_info: LLMModelPatch):
     try:
         print(f"Received model info: {model_info}")
-        from backend.db.database import update_llm_model_in_db
+        from backend.db.llm_db import update_llm_model_in_db
         update_llm_model_in_db(model_id, model_info)
         return {"message": "LLM 모델 업데이트 성공"}
     except Exception as e:
@@ -84,7 +84,7 @@ async def update_llm_model(model_id: str, model_info: LLMModelPatch):
 @router.delete("/llm/model/{model_id}")
 async def delete_llm_model(model_id: int):
     try:
-        from backend.db.database import delete_llm_model_from_db
+        from backend.db.llm_db import delete_llm_model_from_db
         delete_llm_model_from_db(model_id)
         return {"message": "LLM 모델 삭제 성공"}
     except Exception as e:
@@ -92,21 +92,21 @@ async def delete_llm_model(model_id: int):
     
 @router.get("/llm/model/{model_id}/integrations")
 async def get_model_integrations(model_id: int):
-    from backend.db.database import get_llm_models_from_db
+    from backend.db.llm_db import get_llm_models_from_db
     models = get_llm_models_from_db()
     model = next((m for m in models if m["id"] == model_id), None)
     if model is None:
         raise HTTPException(status_code=404, detail="모델을 찾을 수 없습니다.")
     
     try:
-        params = json.load(model.get("params") or "{}")
+        params = json.loads(model.get("params") or "{}")
         return {"integrations": params.get("integrations", [])}
     except Exception:
         return {"integrations": []}
     
 @router.patch("/llm/model/{model_id}/integrations")
 async def update_model_integrations(model_id: int, payload: dict):
-    from backend.db.database import get_connection
+    from backend.db.base import get_connection
     conn = get_connection()
     try:
         integrations: List[str] = payload.get("integrations", [])
@@ -128,7 +128,7 @@ async def update_model_integrations(model_id: int, payload: dict):
 
 @router.get("/llm/model/{model_id}/params")
 async def get_model_params(model_id: int):
-    from backend.db.database import get_connection
+    from backend.db.base import get_connection
     import json
 
     conn = get_connection()
@@ -148,7 +148,7 @@ async def get_model_params(model_id: int):
 
 @router.patch("/llm/model/{model_id}/params")
 async def update_model_params(model_id: int, payload: dict):
-    from backend.db.database import get_connection
+    from backend.db.base import get_connection
     import json
 
     conn = get_connection()

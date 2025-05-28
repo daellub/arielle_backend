@@ -12,7 +12,7 @@ class ModelLoadRequest(BaseModel):
 @router.get("/{alias}/test", response_model=ModelLoadRequest)
 async def test_model_response(alias: str = Path(...)):
     try:
-        url = "http://host.docker.internal:8080/v1/chat/completions"
+        url = "http://172.27.112.1:8080/v1/chat/completions"
         headers = {"Content-Type": "application/json"}
 
         payload = {
@@ -46,7 +46,7 @@ async def test_model_response(alias: str = Path(...)):
 async def check_model_loaded(alias: str = Path(...)):
     try:
         async with httpx.AsyncClient() as client:
-            response = await client.get("http://host.docker.internal:8080/v1/models")
+            response = await client.get("http://172.27.112.1:8080/v1/models")
             response.raise_for_status()
 
         models = response.json().get("data", [])

@@ -1,6 +1,6 @@
 # backend/mcp/routes/log_routes.py
 from fastapi import APIRouter
-from backend.db.database import get_connection
+from backend.db.base import get_connection
 
 router = APIRouter(prefix="/api")
 

@@ -2,7 +2,8 @@
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from backend.db.database import get_connection, insert_mcp_log
+from backend.db.base import get_connection
+from backend.db.mcp_db import insert_mcp_log
 
 router = APIRouter(prefix="/api")
 

@@ -3,7 +3,8 @@ import json
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import List
-from backend.db.database import get_connection, update_llm_model_params
+from backend.db.base import get_connection
+from backend.db.llm_db import update_llm_model_params
 
 class SourceItem(BaseModel):
     source_id: int

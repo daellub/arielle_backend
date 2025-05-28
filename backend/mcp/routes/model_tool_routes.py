@@ -2,7 +2,7 @@
 from fastapi import APIRouter
 from pydantic import BaseModel
 from typing import List
-from backend.db.database import get_connection
+from backend.db.base import get_connection
 
 router = APIRouter(prefix="/llm/model")
 

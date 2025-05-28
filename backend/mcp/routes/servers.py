@@ -4,7 +4,7 @@ from pydantic import BaseModel, Field, HttpUrl
 from typing import List
 import time, httpx
 
-from backend.db.database import (
+from backend.db.mcp_db import (
     list_mcp_servers,
     get_mcp_server,
     create_mcp_server,

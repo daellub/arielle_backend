@@ -1,10 +1,7 @@
 # backend/llm/memory/context_builder.py
 
+from backend.llm.memory.summarizer import get_summary
 from typing import List, Dict
-
-async def get_summary(model_id: int) -> str:
-    # TODO: 실제 요약 로직 구현 예정
-    return "This is a summary of the context."
 
 async def build_context(
     model_id: int,

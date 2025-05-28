@@ -31,19 +31,24 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(servers_router, prefix="/mcp", tags=["MCP"])
-app.include_router(llm_router, prefix="/mcp", tags=["LLM"])
-app.include_router(data_router, prefix="/mcp", tags=["Data"])
-app.include_router(model_source_router, prefix="/mcp", tags=["Model Source"])
-app.include_router(prompt_router, prefix="/mcp", tags=["Prompt"])
-app.include_router(model_prompt_router, prefix="/mcp", tags=["Model Prompt"])
-app.include_router(tool_router, prefix="/mcp", tags=["Tool"])
-app.include_router(model_tool_router, prefix="/mcp", tags=["Model Tool"])
-app.include_router(memory_router, prefix="/mcp", tags=["Memory"])
-app.include_router(sampling_router, prefix="/mcp", tags=["Sampling"])
-app.include_router(security_router, prefix="/mcp", tags=["Security"])
-app.include_router(log_router, prefix="/mcp", tags=["Logs"])
+# ────────────── MCP ROUTES ──────────────
+app.include_router(servers_router,        prefix="/mcp", tags=["MCP"])
+app.include_router(log_router,            prefix="/mcp", tags=["Logs"])
+app.include_router(security_router,       prefix="/mcp", tags=["Security"])
 
-app.include_router(llm_load_router, prefix="/mcp", tags=["LLM Load"])
+# ────────────── LLM ROUTES ──────────────
+app.include_router(llm_router,            prefix="/mcp", tags=["LLM"])
+app.include_router(llm_load_router,       prefix="/mcp", tags=["LLM Load"])
+app.include_router(prompt_router,         prefix="/mcp", tags=["Prompt"])
+app.include_router(model_prompt_router,   prefix="/mcp", tags=["Model Prompt"])
+app.include_router(memory_router,         prefix="/mcp", tags=["Memory"])
+app.include_router(sampling_router,       prefix="/mcp", tags=["Sampling"])
+app.include_router(tool_router,           prefix="/mcp", tags=["Tool"])
+app.include_router(model_tool_router,     prefix="/mcp", tags=["Model Tool"])
+app.include_router(model_source_router,   prefix="/mcp", tags=["Model Source"])
 
-app.include_router(spotify_router, prefix="/mcp", tags=["Spotify Integration"])
+# ────────────── DATA ROUTES ──────────────
+app.include_router(data_router,           prefix="/mcp", tags=["Data"])
+
+# ────────────── INTEGRATIONS ──────────────
+app.include_router(spotify_router,        prefix="/mcp", tags=["Spotify Integration"])
