@@ -4,10 +4,16 @@ from typing import Dict
 from backend.llm.emotion.generator import generate_prompt
 from backend.llm.emotion.extractor import extract_emotion_json
 
-LLAMA_ENDPOINT = "http://172.27.112.1:8081/v1/completions"
+# 📌 실제 llama.cpp 서버가 실행 중인 IP로 고정
+LLAMA_ENDPOINT = "http://host.docker.internal:8081/v1/completions"
 
 async def analyze_emotion(text: str) -> Dict[str, str]:
-    prompt = generate_prompt(text)
+    try:
+        prompt = generate_prompt(text)
+        # print("✅ generate_prompt 성공:", prompt)
+    except Exception as e:
+        # print("❌ generate_prompt 실패:", e)
+        raise
     payload = {
         "model": "emotion-analyzer",
         "prompt": prompt,
@@ -16,16 +22,32 @@ async def analyze_emotion(text: str) -> Dict[str, str]:
         "stream": False
     }
 
-    async with httpx.AsyncClient(timeout=60.0) as client:
-        try:
+    # print("\n[🧠 감정 분석 시작]")
+    # print("📨 입력 텍스트:", text)
+    # print("📤 전송 프롬프트:\n", prompt)
+    # print("📦 Payload:", payload)
+
+    try:
+        async with httpx.AsyncClient(timeout=60.0) as client:
             res = await client.post(LLAMA_ENDPOINT, json=payload)
             res.raise_for_status()
             content = res.json()["choices"][0]["text"].strip()
-        except httpx.RequestError as e:
-            raise ValueError(f"Request failed: {e}")
-        except httpx.TimeoutException:
-            raise ValueError("The request timed out after 60 seconds.")
-        except httpx.HTTPStatusError as e:
-            raise ValueError(f"HTTP error occurred: {e.response.status_code}")
+            print("📥 LLM 응답 원문:\n", content)
+    except httpx.RequestError as e:
+        print("❌ RequestError:", e)
+        raise ValueError(f"Request failed: {e}")
+    except httpx.TimeoutException:
+        print("❌ TimeoutException")
+        raise ValueError("The request timed out after 60 seconds.")
+    except httpx.HTTPStatusError as e:
+        print("❌ HTTPStatusError:", e.response.status_code)
+        raise ValueError(f"HTTP error occurred: {e.response.status_code}")
 
-    return extract_emotion_json(content)
+    try:
+        parsed = extract_emotion_json(content)
+        print("✅ 파싱된 결과:", parsed)
+        return parsed
+    except Exception as e:
+        print("❌ 파싱 실패:", e)
+        print("❓ 원문 응답 다시 출력:", repr(content))
+        raise ValueError(f"감정 분석 응답 파싱 실패: {e}")

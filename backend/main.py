@@ -29,6 +29,9 @@ from backend.llm.routes.feedback_route import router as feedback_router
 # TTS 백엔드 라이브러리
 from backend.tts.routes import router as tts_router
 
+# VRM 백엔드 라이브러리
+from backend.vrm.routes import router as vrm_router
+
 from backend.db.asr_db import save_log_to_db
 
 fastapi_app = FastAPI(title='Arielle AI Backend Server')
@@ -61,6 +64,9 @@ fastapi_app.include_router(feedback_router, prefix='/llm', tags=['LLM Feedback']
 
 # TTS
 fastapi_app.include_router(tts_router, prefix='/tts', tags='TTS')
+
+# VRM
+fastapi_app.include_router(vrm_router, prefix='/vrm', tags='VRM')
 
 app = socketio.ASGIApp(
     socketio_server=sio, 

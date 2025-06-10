@@ -1,6 +1,7 @@
 # backend/db/mcp_db.py
 import json
 import pymysql
+from pymysql.cursors import DictCursor
 from datetime import datetime
 from typing import List, Optional
 from backend.db.base import get_connection
@@ -18,7 +19,7 @@ def list_mcp_servers() -> List[dict]:
 def get_mcp_server(alias: str) -> Optional[dict]:
     conn = get_connection()
     try:
-        with conn.cursor() as cursor:
+        with conn.cursor(DictCursor) as cursor:
             cursor.execute("SELECT * FROM mcp_servers WHERE alias = %s", (alias,))
             return cursor.fetchone()
     finally:
@@ -87,7 +88,7 @@ def get_prompt_templates_by_ids(ids: list[int]) -> list[str]:
         return []
     conn = get_connection()
     try:
-        with conn.cursor() as cursor:
+        with conn.cursor(DictCursor) as cursor:
             format_strings = ','.join(['%s'] * len(ids))
             cursor.execute(f'''
                 SELECT template, variables FROM mcp_prompts

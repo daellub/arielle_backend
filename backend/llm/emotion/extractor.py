@@ -1,5 +1,5 @@
 # backend/llm/emotion/extractor.py
-import re
+import json
 from typing import Dict
 
 ALLOWED_EMOTIONS = {
@@ -10,12 +10,21 @@ ALLOWED_EMOTIONS = {
 }
 
 def extract_emotion_json(text: str) -> Dict[str, str]:
-    match = re.search(r'{\\s*\"emotion\"\\s*:\\s*\"(.*?)\"\\s*,\\s*\"tone\"\\s*:\\s*\"(.*?)\"\\s*}', text)
-    if not match:
-        raise ValueError(f"응답 파싱 실패: {text}")
+    print("🧪 파싱 대상 텍스트:", repr(text))
+    
+    try:
+        data = json.loads(text)
+        emotion = data.get("emotion", "neutral")
+        tone = data.get("tone", "neutral")
+        blendshape = data.get("blendshape", "Neutral")
 
-    emotion, tone = match.group(1), match.group(2)
-    if emotion not in ALLOWED_EMOTIONS:
-        emotion = "neutral"
+        if emotion not in ALLOWED_EMOTIONS:
+            emotion = "neutral"
 
-    return {"emotion": emotion, "tone": tone}
+        return {
+            "emotion": emotion,
+            "tone": tone,
+            "blendshape": blendshape
+        }
+    except Exception as e:
+        raise ValueError(f"응답 파싱 실패: {text} ({e})")

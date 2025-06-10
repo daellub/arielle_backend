@@ -1,6 +1,7 @@
 # backend/db/llm_db.py
 import json
 import pymysql
+from pymysql.cursors import DictCursor
 from datetime import datetime
 from typing import Optional
 from backend.db.base import get_connection
@@ -13,15 +14,19 @@ def save_llm_interaction(
     ja_translate_response: str,
     emotion: str,
     tone: str,
+    blendshape: str
 ) -> int:
     conn = None
     try:
         conn = get_connection()
         with conn.cursor() as cursor:
             sql = """
-                INSERT INTO llm_interactions 
-                (model_name, request, response, translate_response, ja_translate_response, emotion, tone)
-                VALUES (%s, %s, %s, %s, %s, %s, %s)
+                INSERT INTO llm_interactions (
+                    model_name, request, response,
+                    translate_response, ja_translate_response,
+                    emotion, tone, blendshape
+                )
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
             """
             cursor.execute(sql, (
                 model_name,
@@ -31,6 +36,7 @@ def save_llm_interaction(
                 ja_translate_response,
                 emotion,
                 tone,
+                blendshape
             ))
             interaction_id = cursor.lastrowid
         conn.commit()
@@ -133,7 +139,7 @@ def get_llm_model_by_id(model_id: int) -> Optional[dict]:
     conn = None
     try:
         conn = get_connection()
-        with conn.cursor() as cursor:
+        with conn.cursor(DictCursor) as cursor:
             sql = """
                 SELECT id, name, model_key, endpoint, enabled, framework, type, params
                 FROM llm_models

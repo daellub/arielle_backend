@@ -1,5 +1,6 @@
 # backend/llm/services/chat_handler.py
 
+import pymysql
 from fastapi import WebSocket
 from fastapi.websockets import WebSocketDisconnect
 import json
@@ -14,23 +15,26 @@ from backend.llm.services.tool_executor import (
 )
 from backend.llm.services.responder import stream_llm_response
 from backend.llm.services.translator import translate_to_ko_and_ja
-from backend.llm.services.emotion_analyzer import analyze_emotion
+from backend.llm.emotion.analyzer import analyze_emotion
 from backend.llm.services.saver import save_interaction_and_build_response
 
 from backend.db.llm_db import get_llm_model_by_id, get_connection
+
+async def safe_ws_close(ws: WebSocket):
+    try:
+        await ws.close()
+    except RuntimeError:
+        pass
 
 def get_tools_by_ids(tool_ids: list[int]):
     if not tool_ids:
         return []
     conn = get_connection()
     try:
-        with conn.cursor() as cursor:
+        with conn.cursor(pymysql.cursors.DictCursor) as cursor:
             q = f"SELECT id, name, type, command, enabled FROM mcp_tools WHERE id IN ({','.join(['%s'] * len(tool_ids))})"
             cursor.execute(q, tuple(tool_ids))
-            return [
-                {"id": r[0], "name": r[1], "type": r[2], "command": r[3], "enabled": r[4]}
-                for r in cursor.fetchall()
-            ]
+            return cursor.fetchall()
     finally:
         conn.close()
 
@@ -54,6 +58,9 @@ async def handle_chat(ws: WebSocket):
                     return
 
                 model = get_llm_model_by_id(model_id)
+                print("[DEBUG] model type:", type(model))
+                print("[DEBUG] model:", model)
+                
                 if not model or not model["enabled"]:
                     await ws.send_text("[ERROR] 모델이 비활성화됨")
                     await ws.close()
@@ -146,10 +153,14 @@ async def handle_chat(ws: WebSocket):
                 ko, ja = await translate_to_ko_and_ja(stream_text)
 
                 try:
+                    print("[DEBUG] 감정 분석 진입함")
                     emo = await analyze_emotion(stream_text)
+                    print("[DEBUG] 감정 분석 종료")
                     emotion = emo.get("emotion", "neutral")
                     tone = emo.get("tone", "neutral")
-                except:
+                    blendshape = emo.get("blendshape", "Neutral")
+                except Exception as e:
+                    print("❌ 감정 분석 예외 발생:", e)
                     emotion, tone = "neutral", "neutral"
 
                 # 7. 저장 및 응답
@@ -161,6 +172,7 @@ async def handle_chat(ws: WebSocket):
                     ja_translation=ja,
                     emotion=emotion,
                     tone=tone,
+                    blendshape=blendshape,
                     tool_call=tool_call
                 )
 
@@ -168,12 +180,15 @@ async def handle_chat(ws: WebSocket):
 
             except Exception as e:
                 print(f"[ERROR] 메시지 처리 중 오류: {e}")
-                await ws.send_text(f"[ERROR] 처리 실패: {e}")
-                await ws.close()
+                try:
+                    await ws.send_text(f"[ERROR] 처리 실패: {e}")
+                except RuntimeError:
+                    pass  # 이미 닫힌 경우 무시
+                await safe_ws_close(ws)
                 return
 
     except WebSocketDisconnect:
         print("[WS] 클라이언트 연결 종료")
     except Exception as e:
         print(f"[WS] 처리 중 예외: {e}")
-        await ws.close()
+        await safe_ws_close(ws)

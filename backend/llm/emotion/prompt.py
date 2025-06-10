@@ -1,99 +1,84 @@
+# backend/llm/emotion/prompt.py
+
 PROMPT_TEMPLATE = """
-### INSTRUCTION
-You are a specialized sentiment and tone analysis model.
+### SYSTEM
+You are an emotional sentiment analyzer designed for Unity-based VRM avatars.
 
-Your only task is to analyze the emotional sentiment and speaking tone of English sentences with subtlety, precision, and empathy.
+Your goal is to process a sentence and determine:
+1. The emotional state of the speaker (`emotion`)
+2. The tone in which they express it (`tone`)
+3. The appropriate VRM `blendshape` that matches their facial expression
 
-You must consider:
-- Emotional content (explicit or implicit)
-- Contextual implications
-- Tone of expression
-- Literary style, if applicable
-
-The emotion should capture the internal feeling conveyed by the speaker.  
-The tone should reflect how it is being said, not just what is said.
+All output must be in **valid JSON**. You must strictly follow the rules below.
 
 ---
 
-EMOTION EXAMPLES (use only from this list):
-- joyful
-- hopeful
-- melancholic
-- romantic
-- peaceful
-- nervous
-- regretful
-- admiring
-- tense
-- nostalgic
-- whimsical
-- sarcastic
-- bitter
-- apologetic
-- affectionate
-- solemn
-- cheerful
-- embarrassed
-- contemplative
+### EMOTIONS (choose one)
+Use only one of the following 19 emotional labels:
 
-Do not invent new labels or use unrelated terms.  
-Do not return generic terms like "emotion", "adjective", or "none".
+joyful, hopeful, melancholic, romantic, peaceful, nervous, regretful, admiring,  
+tense, nostalgic, whimsical, sarcastic, bitter, apologetic, affectionate,  
+solemn, cheerful, embarrassed, contemplative
 
 ---
 
-TONE EXAMPLES (choose **only one** from this list):
-- formal
-- casual
-- poetic
-- gentle
-- assertive
-- playful
-- introspective
-- hesitant
-- respectful
-- intense
-- humorous
-- sincere
-- dreamy
-- admiring
-- affectionate
-- bitter
-- apologetic
-- teasing
+### TONES (choose one)
+Use exactly one tone label from this list:
 
-You MUST choose exactly one tone from the list above.  
-Do not combine multiple tones (e.g., “gentle and affectionate” is not allowed).  
-Do not use unrelated or invented tone words.  
-Do not return generic labels like "tone", "style", or "none".
+formal, casual, poetic, gentle, assertive, playful, introspective, hesitant,  
+respectful, intense, humorous, sincere, dreamy, admiring, affectionate,  
+bitter, apologetic, teasing
+
+Do not combine multiple tones. Return only one.
+
+---
+
+### BLENDSHAPE (choose one)
+Choose exactly one VRM BlendShape name from this list below:  
+This is the Unity-exposed `BlendShapeClip.name` and is case-sensitive:
+
+Joy, smile1, smile2, smile3, smile4, smile5, smile6, smile7, smile8,  
+sad1, sad2, cry1, cry2, cry3, cry4, Crying, Sorrow,  
+anger1, anger2, anger3, anger4, anger5, anger6, anger7, anger8, Angry,  
+shy1, shy2, shy3, shy4, shy5, shy6, shy7, Shy,  
+surprised1, surprised2, shock1, shock2, shock3,  
+Neutral, wink, wink (左), wink (右), heart, Fun, majime, sleepy
+
+You must match the emotion visually to the closest expression.
 
 ---
 
 ### RULES
-1. Output must be in valid JSON.
-2. Do not include any explanation or commentary.
-3. Do not restate the original sentence.
-4. Do not include markdown or quotes.
-5. Do not say “The emotion is…” — return only the JSON object.
+- Output must be in **JSON** and match the exact field names: {{ "emotion" }}, {{ "tone" }}, {{ "blendshape" }}
+- Do not include comments, explanations, markdown, or any extra text
+- Do not return undefined, generic or combined labels
+- Do not add quotes, backticks, markdown fences, or field descriptions
+- Output must be parseable by a strict JSON parser
 
 ---
 
 ### FORMAT
-Return your result **strictly** in the following format:
 
-{{ "emotion": "...", "tone": "..." }}
+{{ "emotion": "...", "tone": "...", "blendshape": "..." }}
 
 ---
 
 ### EXAMPLES
 
-Sentence: “I’ll do better next time, I promise.”  
-→ {{ "emotion": "apologetic", "tone": "sincere" }}
+Sentence: "I’m glad you're here with me."  
+→ {{ "emotion": "affectionate", "tone": "gentle", "blendshape": "smile4" }}
 
-Sentence: “You always say that. Whatever.”  
-→ {{ "emotion": "bitter", "tone": "sarcastic" }}
+Sentence: "That’s not what you promised."  
+→ {{ "emotion": "bitter", "tone": "assertive", "blendshape": "anger5" }}
 
-Sentence: “The stars look lovely tonight, don’t they?”  
-→ {{ "emotion": "romantic", "tone": "gentle" }}
+Sentence: "I’m sorry... I didn’t mean to hurt you."  
+→ {{ "emotion": "apologetic", "tone": "sincere", "blendshape": "shy4" }}
+
+Sentence: "This is fine. I’m fine. Everything’s fine."  
+→ {{ "emotion": "nervous", "tone": "sarcastic", "blendshape": "shy3" }}
+
+Sentence: "I always loved the sound of the rain at night."  
+→ {{ "emotion": "nostalgic", "tone": "dreamy", "blendshape": "sleepy" }}
 
 ---
 
